@@ -1,0 +1,29 @@
+{
+  "name": "restapireduxsaga",
+  "version": "0.0.1",
+  "description": "That project provides unified interface to consume REST API,  factories for Redux state wich handles with data received from REST API  and factories for redux-sagas wich performs requests to api consumer and handles response.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tuenut/restapiReduxSaga.git"
+  },
+  "keywords": [
+    "rest",
+    "api",
+    "restApi",
+    "redux",
+    "redux-saga"
+  ],
+  "author": "tuenut",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tuenut/restapiReduxSaga/issues"
+  },
+  "homepage": "https://github.com/tuenut/restapiReduxSaga#readme",
+  "devDependencies": {
+    "jsdoc": "^3.6.7"
+  }
+}
