@@ -1,2 +1,13 @@
 # restapiReduxSaga
-Try to create banch of extendable factories with unified interfaces to work with RESTApi over axios, create redux states uses with that RESTApi and redux-sagas perform requests to RestApi and deal with responses. Main pupouse is implements "single responsibility" principle and reduce boilerplates.
+
+That project provides unified interface to consume REST API,
+ factories for Redux state wich handles with data received from REST API
+ and factories for redux-sagas wich performs requests to api consumer and handles response.
+
+Pupouses:
+- Implements "single responsibility" principle with abstractions:
+  - ApiConsumer
+  - StateFactory
+  - SagaFactory
+- Reduce boilerplates related to redux and redux-saga usage
+- Unify usage of REST API through ApiConsumer object interface
