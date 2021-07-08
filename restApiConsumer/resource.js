@@ -1,62 +1,52 @@
 import {AxiosInstance, AxiosPromise} from "axios";
-import {DataHandler, IHandler} from "./dataHandler";
-import {URI} from "./uriProvider";
+
+import {URI} from "./uri";
 
 
-/** Базовый абстрактный класс для апи-эндпоинтов.
- * Основные методы обращения к апи уже реализованы с базовым поведение.
+/** Base class for REST API resource.
+ * Common REST API methods already implemented there. It can be enough to use.
  *
- * Для определения специфических хэндлеров для каждого метода, предполагается
- * явный вызов сеттера для конкретного хэндлера у объекта this.handlers. Можно
- * делать это в конструкторе наследника BaseApiEndpoint или в клиентском коде.
- * Как вариант можно делать отдельный класс, унаследованный от DataHandler и
- * использовать его.
+ * @class BaseApiResource
  *
  * @property {AxiosInstance} client
- * @property {DataHandler} handlers
- * @property {URI} __url
+ * @property {URI} url
  *
- * @example
- *  class Endpoint extends BaseApiEndpoint {
- *    constructor(client) {
- *      super(ENDPOINT_BASE_URL)
- *
- *      this.setUrl(currentEndpointUrl);
- *    }
- *  }
  * */
-export class Endpoint {
+export class BaseApiResource {
+  #url = undefined;
+
   /**
    * @todo: надо допилить в конфигураторе, чтобы урл и заголовки получались из
    * @todo: конфига и с ними класс инициалицизовался. Или типа того.
    *
    * @param {AxiosInstance} client -
-   * @param {string=""} [url] -
-   * @param {DataHandler=null} [handlers] -
+   * @param {string} [url=""] -
    * */
-  constructor(client, url = "", handlers) {
+  constructor(client, url = "") {
     this.client = client;
-    this.handlers = handlers ? handlers : new DataHandler();
 
-    this.setUrl(url);
-  }
-
-  get url(): URI {
-    return this.__url;
+    this.url = url;
   }
 
   /**
+   * @returns {URI}
+   * */
+  get url() {
+    return this.#url;
+  }
+
+  /** Setter can receive string or URI object.
+   * You can pass just string and it may be enough.
+   *
    * @param {string | URI} value
    * */
-  setUrl(value) {
-    this.__url = typeof value === "string" ? new URI(value) : value;
+  set url(value) {
+    this.#url = typeof value === "string" ? new URI(value) : value;
   }
 
   /**
-   * @method retrieve
-   *
    * @param {number | string} id - Id of entity.
-   * @param {string=""} [extraAction] - Name of extra action for endpoint.
+   * @param {string} [extraAction=""] - Name of extra action for endpoint.
    * @param {object} [options]
    *
    * @returns {AxiosPromise} AxiosPromise without catch statement.
@@ -68,8 +58,6 @@ export class Endpoint {
   }
 
   /**
-   * @method  list
-   *
    * @param {object} [options] - REST API otions.
    * @param {string} [extraAction] -
    *
@@ -82,8 +70,6 @@ export class Endpoint {
   }
 
   /**
-   * @method create
-   *
    * @param {object} data - Data for create new object.
    *
    * @returns {AxiosPromise} - AxiosPromise without catch statement.
@@ -95,8 +81,6 @@ export class Endpoint {
   }
 
   /**
-   * @method  update
-   *
    * @param {number | string} id - Id of entity.
    * @param {object} data - Data for update object.
    *
@@ -109,8 +93,6 @@ export class Endpoint {
   }
 
   /**
-   * @method delete
-   *
    * @param {number | string} id - Id of entity.
    *
    * @returns {AxiosPromise} AxiosPromise without catch statement.
@@ -119,24 +101,6 @@ export class Endpoint {
     return this.client
       .delete(this.url.delete(id))
       .then(this.handlers.onSuccessDelete)
-  }
-
-  /**
-   * @deprecated should be removed [more info](./handler)
-   * */
-  setHandler(handler) {
-    this.handlers.defaultOnSuccess = handler;
-
-    return this;
-  }
-
-  /**
-   * @deprecated should be removed [more info](./handler)
-   * */
-  setOnErrorHandler(handler: IHandler) {
-    this.handlers.defaultOnError = handler;
-
-    return this;
   }
 
   /**

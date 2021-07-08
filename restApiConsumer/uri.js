@@ -37,8 +37,8 @@ export class URI {
   }
 
   /**
-   * @param {object} [options] -
-   * @param {string} [extraAction] -
+   * @param {object} [options] - URI options
+   * @param {string} [extraAction] - Any extra action for entity list
    *
    * @returns {string}
    * */
@@ -82,9 +82,9 @@ export class URI {
    *
    * @protected
    *
-   * @param {object} [options={}] -
+   * @param {object} [options={}] - options dict
    *
-   * @returns {string}
+   * @returns {string} Options parsed into URI-options string
    * */
   parseOptions(options = {}) {
     let parsedOptions = Object.entries(options)
