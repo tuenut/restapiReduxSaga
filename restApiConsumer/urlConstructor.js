@@ -10,15 +10,16 @@
  * - `complete` - is extra action to complete task.
  *
  *
- * @property {string} baseURL - The base URL for REST API. Any resources will
- *  calculate from there.
+ * @property {string} resourcePath - The resource path for REST API. 
  */
-export class URI {
+export class UrlConstructor {
+  #resourcePath = undefined;
+  
   /**
-   * @param {string} baseURL - The base URL for REST API.
+   * @param {string} resourcePath - The resource path for REST API.
    * */
-  constructor(baseURL) {
-    this.baseURL = url.endsWith("/") ? baseURL : baseURL + "/";
+  constructor(resourcePath) {
+    this.#resourcePath = resourcePath.endsWith("/") ? resourcePath : resourcePath + "/";
   }
 
   /**
@@ -32,8 +33,8 @@ export class URI {
     const parsedOptions = this.parseOptions(options);
 
     return extraAction
-      ? `${this.baseURL}${entityId}/${extraAction}/${parsedOptions}`
-      : `${this.baseURL}${entityId}/${parsedOptions}`;
+      ? `${this.#resourcePath}${entityId}/${extraAction}/${parsedOptions}`
+      : `${this.#resourcePath}${entityId}/${parsedOptions}`;
   }
 
   /**
@@ -46,8 +47,8 @@ export class URI {
     const parsedOptions = this.parseOptions(options);
 
     return extraAction
-      ? `${this.baseURL}${extraAction}/${parsedOptions}`
-      : `${this.baseURL}${parsedOptions}`;
+      ? `${this.#resourcePath}${extraAction}/${parsedOptions}`
+      : `${this.#resourcePath}${parsedOptions}`;
   }
 
   /** Shortcut for assembly create-url.
@@ -55,7 +56,7 @@ export class URI {
    * @returns {string}
    * */
   create() {
-    return this.retrieve("");
+    return this.#resourcePath;
   }
 
   /** Shortcut for assembly update-url.

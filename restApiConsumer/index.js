@@ -1,39 +1,50 @@
-import {ApiRepository} from "./repository";
-import {BaseApiResource} from "./resource";
-import {EndpointDoesNotExist, ShouldBeConfigured} from "./errors";
+import {ApiRepository} from "./repository.js";
+import {ApiResource} from "./resource.js";
+import {EndpointDoesNotExist, ShouldBeConfigured} from "./errors.js";
 
 
 /**
  * @class ApiManagerSingleton
  * @classdesc
  *
- * @property {ApiRepository} api -
+ * @property {ApiRepository} #_api -
  * @property {string} host -
  * @property {object | Function} commonHeaders -
  * @property {ApiEndpointsRepo} endpointsConfig -
- * @property {ApiManagerSingleton} _instance -
+ * @property {ApiManagerSingleton} #instance -
  *
  * @todo: надо как следует проработать это все. Вероятно, можно сделать проще.
  * @todo: заюавно, что все равно вначале оно все равно обращается ко всем полям и все равно все создает.
  *
  * */
 export class ApiManagerSingleton {
-  static instance = undefined;
-  #api = undefined;
+  #_api;
 
   constructor() {
-    if (ApiManagerSingleton.instance) {
+    if (ApiManagerSingleton.hasOwnProperty('instance')) {
       return ApiManagerSingleton.instance;
     } else {
       this.host = "";
       this.config = {};
       this.commonHeaders = {};
       this.axiosConfig = {};
+
+      Object.defineProperty(ApiManagerSingleton, 'instance', {
+        value: this,
+        enumerable: false,
+        writable: false,
+        configurable: false
+      });
     }
   }
 
+  /** Method returns ApiManagerSingleton instance. Shoud be called instead
+   * of constructor.
+   *
+   * @returns {ApiManagerSingleton}
+   * */
   static getInstance() {
-    if (ApiManagerSingleton.instance) {
+    if (ApiManagerSingleton.hasOwnProperty('instance')) {
       return ApiManagerSingleton.instance;
     } else {
       return new ApiManagerSingleton();
@@ -45,15 +56,17 @@ export class ApiManagerSingleton {
    * @returns {ApiRepository}
    * */
   static getApi() {
-    if (ApiManagerSingleton.instance)
-      return ApiManagerSingleton.instance.api;
+    const apiManager = ApiManagerSingleton.getInstance();
+
+    if (apiManager)
+      return apiManager.api;
     else {
       throw new ShouldBeConfigured();
     }
   }
 
   get api() {
-    return this.#api;
+    return this.#_api;
   }
 
   set api(apiRepository) {
@@ -61,59 +74,80 @@ export class ApiManagerSingleton {
      * @param {ApiRepository} target -
      * @param {string} name -
      *
-     * @returns {BaseApiResource} Some object extends BaseApiResource.
+     * @returns {ApiResource} Some object extends BaseApiResource.
      * */
     const proxyGetter = (target, name) => {
-      // if (!(name in target)) {
-      //   if (name in this.config) {
-      //     Object.getPrototypeOf(target)[name] = new this.config[name](this.api.client);
-      //   } else {
-      //     throw new EndpointDoesNotExist(name, {target, config: this.config});
-      //   }
-      // }
+      const apiManager = ApiManagerSingleton.getInstance();
+
+      if (!(name in target)) {
+        if (name in apiManager.config) {
+          target.createResource(name, apiManager.config[name]._class);
+        } else {
+          throw new EndpointDoesNotExist(
+            name,
+            {target, config: apiManager.config}
+          );
+        }
+      }
 
       return target[name];
     }
 
-    this.#api = new Proxy(apiRepository, {get: proxyGetter});
+    this.#_api = new Proxy(apiRepository, {get: proxyGetter});
   }
 
   /**
    *
-   * @param {string} [host] - baseUrl для axios конфига
-   * @param {ApiEndpointsRepo} [config] - словарь с эндпоинтами
-   * @param {object | Function} commonHeaders - заголовки, которые *в теории* буду использоваться при каждом запросе.
-   *  Если в качестве заголовков передать функцию, то она будет вызвана каждый раз при обращении к полю заголовков
-   *  и результат будет использован в качестве заголовков.
-   * @param {AxiosRequestConfig} [axiosConfig] - конфигурация axios
+   * @param {string} [host] - Your RESTApi base url or host. Can be empty string.
+   * @param {ApiEndpointsRepo} [config] - Api resources config.
+   * @param {object | Function} commonHeaders - You can set some headers wich
+   *  will used in any request or provide a callback, wich hould generate some
+   *  headers for any request.
+   * @param {AxiosRequestConfig} [axiosConfig] - You can configure axios directly.
+   *
+   * @example
+   *  ApiManagerSingleton.configure(
+   *    "https://example.com/",
+   *    {products, orders, customers}
+   *  )
+   *
+   *  ApiManagerSingleton.configure(
+   *    "https://example.com/",
+   *    {products, orders, customers},
+   *    () => ({
+   *      'X-Custom-Header': localStorage.getItem('foo')
+   *    })
+   *  )
+   *
+   *  ApiManagerSingleton.configure(
+   *    "https://example.com/",
+   *    {
+   *      products,
+   *      orders: "customer-orders/",
+   *      customers: {path: "customers/", _class: CustomResourceKlassForUsers}
+   *    },
+   *    {'X-Custom-Header': 'foobar'},
+   *    {withCredentials: true, timeout: 1000,}
+   *  )
    * */
-  static configure(host, config, commonHeaders, axiosConfig) {
-    if (!ApiManagerSingleton.instance) {
-      ApiManagerSingleton.instance = new ApiManagerSingleton();
-    }
-    const apiManager = ApiManagerSingleton.instance;
-
-    apiManager.host = (host !== undefined)
+  configure(host, config, commonHeaders, axiosConfig) {
+    this.host = (host !== undefined)
       ? host
-      : apiManager.host;
+      : this.host;
 
-    apiManager.config = (config !== undefined)
-      ? {...config}
-      : apiManager.config;
+    this.config = (config !== undefined)
+      ? [...config]
+      : this.config;
 
-    apiManager.commonHeaders = (commonHeaders !== undefined)
+    this.commonHeaders = (commonHeaders !== undefined)
       ? commonHeaders
-      : apiManager.commonHeaders;
+      : this.commonHeaders;
 
-    apiManager.axiosConfig = (axiosConfig !== undefined)
+    this.axiosConfig = (axiosConfig !== undefined)
       ? {...axiosConfig}
-      : apiManager.axiosConfig;
+      : this.axiosConfig;
 
-    // apiManager.api = new ApiRepository(
-    //   apiManager.host,
-    //   apiManager.commonHeaders,
-    //   apiManager.axiosConfig
-    // );
+    this.api = new ApiRepository(this.host, this.commonHeaders, this.axiosConfig);
   }
 }
 
@@ -129,7 +163,7 @@ export class ApiManagerSingleton {
  * @param {AxiosRequestConfig} [axiosConfig] - конфигурация axios
  * */
 export const configureApi = (host, config, headers, axiosConfig) =>
-  ApiManagerSingleton.configure(host, config, headers, axiosConfig);
+  ApiManagerSingleton.getInstance().configure(host, config, headers, axiosConfig);
 
 /** Uses to get configered api object for usage in any point of your app.
  *
@@ -140,36 +174,3 @@ export const configureApi = (host, config, headers, axiosConfig) =>
  * */
 export const getApi = () => ApiManagerSingleton.getApi();
 
-
-/*
-config = {
-  commonResource: ("common/"), // use base class for resource
-  customResource: ("custom/", CustomResourceKlass)
-}
-
-
-apiResource = {
-  retrieve: () => string,
-  list: () => string,
-  create: () => string,
-  delete: () => string,
-  update: () => string,
-}
-
-apiResourceConsumer = {
-  retrieve: () => AxiosPromise, // use `apiResource.retrieve`
-  list: () => AxiosPromise, // use `apiResource.list`
-  create: () => AxiosPromise, // etc...
-  delete: () => AxiosPromise, // etc...
-  update: () => AxiosPromise, // etc...
-  _resource: apiResource // private
-}
-
-apiRepo = {
-  commonResource: apiResourceConsumer,
-  customResource: apiResourceConsumer,
-}
-
-apiManager = {
-  api: apiRepo
-}*/
