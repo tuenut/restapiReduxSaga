@@ -1,57 +1,36 @@
-import {configureApi, getApi, ApiManagerSingleton} from "./index";
-import {ApiRepository} from "./repository";
+import axios from "axios/index";
+
+import {configureApi, getApi} from "./index";
+
+
+const axios_client = jest.fn();
+axios.create.mockReturnValue(axios_client);
 
 
 const HOST = "https://example.com";
 const API_CONFIG = [
+  "customers",
   {
-    name: "customers",
-    path: "customers/",
+    name: "products",
+    path: "custom-products",
   },
   {
     name: "orders",
-    path: "orders/",
-  },
-  {
-    name: "products",
-    path: "products/",
+    _class: class CustomApiResource extends ApiResource {
+      close(id) {
+        return this.request("retrieve", this.retrieve(id, "close"));
+      }
+    }
   },
 ];
 const HEADERS = {'X-Custom-Header': 'foobar'};
 const AXIOS_CONFIG = {withCredentials: true, timeout: 1000,};
 
 
-test(
-  "Check ApiManagerSingleton properties." +
-  " Should be: ['host', 'config', 'commonHeaders', 'axiosConfig']", () => {
-    configureApi(HOST, API_CONFIG, HEADERS, AXIOS_CONFIG);
-
-    const apiManager = ApiManagerSingleton.getInstance();
-
-    expect(apiManager)
-      .toHaveProperty("host", HOST);
-
-    expect(apiManager)
-      .toHaveProperty("config", API_CONFIG);
-
-    expect(apiManager)
-      .toHaveProperty("commonHeaders", HEADERS);
-
-    expect(apiManager)
-      .toHaveProperty("axiosConfig", AXIOS_CONFIG);
-  }
-)
 
 
-test(
-  "Check `ApiRepository` object.", () => {
-    // configureApi();
+describe("Check api usage", () => {
+  configureApi(HOST, API_CONFIG, HEADERS, AXIOS_CONFIG);
 
-    const apiManager = ApiManagerSingleton.getInstance();
-
-    const api = getApi();
-
-    expect(apiManager.api).toBeInstanceOf(ApiRepository);
-    expect(api).toBeInstanceOf(ApiRepository);
-  }
-)
+  const api = getApi();
+});
