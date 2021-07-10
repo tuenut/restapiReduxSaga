@@ -1,6 +1,18 @@
 import {UrlConstructor} from "./urlConstructor.js";
 
 
+/**
+ * @name requestMethod
+ * @function
+ *
+ * @param {string} type
+ * @param {string} url
+ * @param {object} [data]
+ *
+ * @returns {Promise}
+ * */
+
+
 /** Base class for REST API resource.
  * Common REST API methods already implemented there. It can be enough to use.
  *
@@ -14,23 +26,31 @@ import {UrlConstructor} from "./urlConstructor.js";
  *
  * */
 export class ApiResource {
-  #url = undefined;
-  request = undefined;
+  #url;
+  #request;
 
   /** That class and its inheritors must be instantiated by
    *  `ApiRepository#createResource()` method.
    *
-   * @param {Function} requestMethod -
+   * @param {requestMethod} requestMethod -
    * @param {string} [url=""] -
    * */
   constructor(requestMethod, url = "") {
     if (!requestMethod) {
       throw new Error("Request method must be provide to resource class.");
     } else {
-      this.request = requestMethod;
+      this.#request = requestMethod;
     }
 
     this.#url = new UrlConstructor(url);
+  }
+
+  get request() {
+    return this.#request;
+  }
+
+  get url() {
+    return this.#url;
   }
 
   /**

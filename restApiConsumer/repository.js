@@ -52,19 +52,12 @@ export class ApiRepository {
    * @param {ApiResource} [CustomResourceKlass] - You can use your own custom
    *  class wich can provide additional(shortcut) methods or has custom behavior.
    * */
-  createResource(resource, CustomResourceKlass) {
+  createResource(name, resourcePath, CustomResourceKlass) {
     const requestMethod = this.request.bind(this);
-    let name, path;
-
-    if (typeof resource === "string") {
-      name = path = resource;
-    } else {
-      ({name, path} = resource);
-    }
 
     const resourceRepositiry = CustomResourceKlass
-      ? new CustomResourceKlass(path, resource)
-      : new ApiResource(path, resource);
+      ? new CustomResourceKlass(requestMethod, resourcePath)
+      : new ApiResource(requestMethod, resourcePath);
 
     this[name] = resourceRepositiry;
   }
