@@ -55,6 +55,8 @@ export class ApiRepository {
   createResource(name, resourcePath, CustomResourceKlass) {
     const requestMethod = this.request.bind(this);
 
+    resourcePath = resourcePath ? resourcePath : name;
+
     const resourceRepositiry = CustomResourceKlass
       ? new CustomResourceKlass(requestMethod, resourcePath)
       : new ApiResource(requestMethod, resourcePath);

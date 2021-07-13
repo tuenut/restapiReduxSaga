@@ -1,4 +1,4 @@
-import {UrlConstructor} from "./urlConstructor";
+import {UrlConstructor} from "../../src/restApiConsumer/urlConstructor";
 
 
 describe(

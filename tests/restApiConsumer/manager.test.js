@@ -1,18 +1,8 @@
-import {configureApi, getApi} from "./index";
-import {ApiManagerSingleton} from "./manager";
+import {configureApi, getApi} from "../../src/restApiConsumer/index";
+import {ApiManagerSingleton} from "../../src/restApiConsumer/manager";
 
+import {API_CONFIG, AXIOS_CONFIG, HEADERS, HOST} from "./testData";
 
-const HOST = "https://example.com";
-const API_CONFIG = [
-  "customers",
-  "products",
-  {
-    name: "orders",
-    path: "customer-orders/"
-  },
-];
-const HEADERS = {'X-Custom-Header': 'foobar'};
-const AXIOS_CONFIG = {withCredentials: true, timeout: 1000,};
 
 
 describe("Chech `ApiManagerSingleton`.", () => {

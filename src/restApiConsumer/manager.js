@@ -75,15 +75,24 @@ export class ApiManagerSingleton {
      * @returns {ApiResource} Some object extends BaseApiResource.
      * */
     const proxyGetter = (target, name) => {
-      console.log("Call proxy getter");
+      // console.log("Call proxy getter");
 
       const apiManager = ApiManagerSingleton.getInstance();
 
       if (!(name in target)) {
-        console.log(`<${name}> not in <${target}>`)
+        // console.log(`<${name}> not in <${target}>`);
+        // console.log({target});
+
         if (name in apiManager.config) {
-          console.log(`<${name}> in <${apiManager.config}>`)
-          target.createResource(name, apiManager.config[name]._class);
+          // console.log(`<${name}> in <${apiManager.config}>`);
+          // console.log({config: apiManager.config});
+
+          target.createResource(
+            name,
+            apiManager.config[name].path,
+            apiManager.config[name]._class
+          );
+
         } else {
           throw new EndpointDoesNotExist(
             name,
