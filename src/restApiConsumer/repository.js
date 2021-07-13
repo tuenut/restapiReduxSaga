@@ -32,9 +32,18 @@ export class ApiRepository {
   }
 
   get headers() {
-    return (this.#headers instanceof Function)
-      ? this.#headers()
-      : {...this.#headers};
+    let headersReturned = this.client
+      ? {...this.client.defaults.headers}
+      : {};
+
+    return {
+      ...headersReturned,
+      ...(
+        this.#headers instanceof Function
+          ? this.#headers()
+          : this.#headers
+      )
+    };
   }
 
   set headers(headers) {
@@ -77,13 +86,7 @@ export class ApiRepository {
    * */
   request(type, url, data = {}) {
     const config = this.#headers
-      ? {
-        ...this.client.defaults,
-        headers: {
-          ...this.client.defaults.headers,
-          ...this.headers
-        }
-      }
+      ? {...this.client.defaults, headers: this.headers}
       : this.client.defaults;
 
     switch (type) {
