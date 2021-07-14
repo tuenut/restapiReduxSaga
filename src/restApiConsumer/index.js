@@ -32,23 +32,43 @@ import {ApiManagerSingleton} from "./manager";
 export const configureApi = (host, config, headers, axiosConfig) =>
   ApiManagerSingleton.getInstance().configure(host, config, headers, axiosConfig);
 
-/** Uses to get configered `api`-object for usage in any point of your app.
+/** Uses to get configured `api`-object for usage in any point of your app.
  *
  * @method getApi
  *
- * @throws {ShouldBeConfigured} if called before call `configureApi`,
- * means api does not configured yet.
+ * @throws {ShouldBeConfigured} If called before `configureApi` calls throws
+ *  `ShouldBeConfigured`, means api does not configured yet.
  *
  * @example
+ * // In that example we have three resources from RESTApi server:
+ * //  customers, products and orders.
+ * // Each resource implements standart CRUD methods also `orders` provide
+ * //  extra method `complete` to completes order by its id.
+ *
+ * class OrderResourceWithCompleteAction extends ApiResource {
+ *  complete(id) {
+ *    return this.request("retrieve", this.url.retrieve(id, "complete"));
+ *  }
+ * }
+ *
  * configure(
  *  "http://example.com/",
- *  ["customers", {name: "orders", path: "customer-orders/"}],
+ *  [
+ *    "customers",
+ *    {
+ *      name: "orders",
+ *      path: "customer-orders/",
+ *      _class: OrderResourceWithCompleteAction
+ *    },
+ *   {name: "products", path: "products"},
+ *  ],
  * )
  * const api = getAPi();
  *
  * api.customers.retrieve(42);
  * api.orders.create([{id: 1, qty: 10}, {id:2, qty: 1}]);
  * api.orders.delete(10);
+ * api.orders.complete(1);
  * */
 export const getApi = () => ApiManagerSingleton.getApi();
 

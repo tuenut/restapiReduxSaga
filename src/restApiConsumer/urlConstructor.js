@@ -1,8 +1,6 @@
 /**
- * @description
- * Object provides some methods to construct URI-string for REST API actions.
- *
- * Some resources can have extra actions like this:
+ * @classdesc Class provides some methods to construct URI-string for REST API
+ * actions. Some resources can have extra actions like this:
  * For **`api/v1/task/1/complete`** :
  * - `api/v1/` - is base URL,
  * - `task` - is resource,

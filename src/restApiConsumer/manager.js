@@ -1,23 +1,25 @@
 import {EndpointDoesNotExist, ShouldBeConfigured} from "./errors";
 import {ApiRepository} from "./repository";
 
+
 /**
- * @class ApiManagerSingleton
- * @classdesc
+ * @classdesc That class just contains configurations and api repository.
+ * It should not be used directly or instantialed through `new`.
+ * Instead use `getApi()` to get api repository object and
+ * `ApiManagerSingleton.getInstance()` if you realy need instance of that class.
  *
- * @property {ApiRepository} #_api -
- * @property {string} host -
- * @property {object | Function} commonHeaders -
- * @property {ApiEndpointsRepo} endpointsConfig -
- * @property {ApiManagerSingleton} #instance -
- *
- * @todo: надо как следует проработать это все. Вероятно, можно сделать проще.
- * @todo: заюавно, что все равно вначале оно все равно обращается ко всем полям и все равно все создает.
+ * @property {ApiRepository} #api - contains api repository object.
+ * @property {string} host - contains host name.
+ * @property {object | Function} commonHeaders - contains headers.
+ * @property {ApiEndpointsRepo} endpointsConfig - contains contains config
+ * @property {ApiManagerSingleton} instance - Readonly property contains
+ *  singleton inctsnce.
  *
  * */
 export class ApiManagerSingleton {
-  #_api;
+  #api;
 
+  /** Should not be used directly. */
   constructor() {
     if (ApiManagerSingleton.hasOwnProperty('instance')) {
       return ApiManagerSingleton.instance;
@@ -64,29 +66,27 @@ export class ApiManagerSingleton {
   }
 
   get api() {
-    return this.#_api;
+    return this.#api;
   }
 
+  /** Create new api repository and wrap it in Proxy with custom getter. */
   set api(apiRepository) {
-    /**
-     * @param {ApiRepository} target -
-     * @param {string} name -
+    /** Getter autocreates on the fly properties with api resources due to api
+     *   config.
+     * If resource already exists, just returns it.
+     *
+     * Sort of metaprogramming thing.
+     *
+     * @param {ApiRepository} target - Api repository object.
+     * @param {string} name - Property name.
      *
      * @returns {ApiResource} Some object extends BaseApiResource.
      * */
     const proxyGetter = (target, name) => {
-      // console.log("Call proxy getter");
-
       const apiManager = ApiManagerSingleton.getInstance();
 
       if (!(name in target)) {
-        // console.log(`<${name}> not in <${target}>`);
-        // console.log({target});
-
         if (name in apiManager.config) {
-          // console.log(`<${name}> in <${apiManager.config}>`);
-          // console.log({config: apiManager.config});
-
           target.createResource(
             name,
             apiManager.config[name].path,
@@ -104,42 +104,17 @@ export class ApiManagerSingleton {
       return target[name];
     }
 
-    this.#_api = new Proxy(apiRepository, {get: proxyGetter});
+    this.#api = new Proxy(apiRepository, {get: proxyGetter});
   }
 
-  /**
+  /** Configure instance.
    *
    * @param {string} [host] - Your RESTApi base url or host. Can be empty string.
-   * @param {Array} [config] - Api resources config.
+   * @param {Array<string|ApiConfig>} [config] - Api resources config.
    * @param {object | Function} commonHeaders - You can set some headers wich
    *  will used in any request or provide a callback, wich hould generate some
    *  headers for any request.
    * @param {AxiosRequestConfig} [axiosConfig] - You can configure axios directly.
-   *
-   * @example
-   *  ApiManagerSingleton.configure(
-   *    "https://example.com/",
-   *    [{name: "customers"}, {name: "orders"}, {name: "products"}, ]
-   *  )
-   *
-   *  ApiManagerSingleton.configure(
-   *    "https://example.com/",
-   *    [{name: "customers"}, {name: "orders"}, {name: "products"}, ],
-   *    {'X-Custom-Header': 'foobar'}
-   *  )
-   *
-   *  ApiManagerSingleton.configure(
-   *    "https://example.com/",
-   *    [
-   *      {name: "customers", _class: CustomResourceKlassForUsers},
-   *      {name: "orders", path: "customer-orders/"},
-   *      {name: "products"},
-   *    ],
-   *    () => ({
-   *      'X-Custom-Header': localStorage.getItem('foo')
-   *    }),
-   *    {withCredentials: true, timeout: 1000,}
-   *  )
    * */
   configure(host, config, commonHeaders, axiosConfig) {
     this.host = (host !== undefined)
