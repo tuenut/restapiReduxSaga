@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "jsdoc": "jsdoc ./src/* -c jsdoc.json"
+    "jsdoc": "jsdoc ./src/* -c jsdoc.json --readme ./README.md"
   },
   "repository": {
     "type": "git",

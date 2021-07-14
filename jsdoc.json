@@ -1,5 +1,18 @@
 {
   "plugins": [
     "plugins/markdown"
-  ]
+  ],
+  "source": {
+    "include": [
+      "src/"
+    ],
+    "exclude": [
+      "tests", "docs/"
+    ],
+    "includePattern": ".+\\.js(doc|x)?$",
+    "excludePattern": "(^|\\/|\\\\)_"
+  },
+  "opts": {
+    "destination": "docs/"
+  }
 }
